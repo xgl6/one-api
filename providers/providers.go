@@ -1,9 +1,11 @@
 package providers
 
 import (
+	"github.com/gin-gonic/gin"
 	"one-api/common/config"
 	"one-api/model"
 	"one-api/providers/ali"
+	"one-api/providers/aliBaiLian"
 	"one-api/providers/azure"
 	azurespeech "one-api/providers/azureSpeech"
 	"one-api/providers/baichuan"
@@ -30,8 +32,6 @@ import (
 	"one-api/providers/tencent"
 	"one-api/providers/xunfei"
 	"one-api/providers/zhipu"
-
-	"github.com/gin-gonic/gin"
 )
 
 // 定义供应商工厂接口
@@ -70,6 +70,7 @@ func init() {
 	providerFactories[config.ChannelTypeMoonshot] = moonshot.MoonshotProviderFactory{}
 	providerFactories[config.ChannelTypeLingyi] = lingyi.LingyiProviderFactory{}
 	providerFactories[config.ChannelTypeHunyuan] = hunyuan.HunyuanProviderFactory{}
+	providerFactories[config.ChannelTypeAliBaiLian] = aliBaiLian.AliBaiLianProviderFactory{}
 
 }
 
