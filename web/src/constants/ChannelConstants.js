@@ -181,6 +181,13 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://cloud.tencent.com/product/hunyuan'
   },
+  41: {
+    key: 41,
+    text: '阿里大模型服务平台百炼',
+    value: 41,
+    color: 'default',
+    url: 'https://bailian.console.aliyun.com/#/home'
+  },
   24: {
     key: 24,
     text: 'Azure Speech',

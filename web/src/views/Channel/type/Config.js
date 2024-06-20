@@ -370,7 +370,20 @@ const typeConfig = {
       key: '按照如下格式输入：SecretId|SecretKey'
     },
     modelGroup: 'Hunyuan'
-  }
+  },
+  41: {
+    inputLabel: {
+      other: '插件参数'
+    },
+    input: {
+      models: ['qwen-turbo', 'qwen-plus', 'qwen-max', 'qwen-max-longcontext', 'text-embedding-v1'],
+      test_model: 'qwen-turbo'
+    },
+    prompt: {
+      other: '请输入插件参数，即 X-DashScope-Plugin 请求头的取值'
+    },
+    modelGroup: 'AliBaiLian'
+  },
 };
 
 export { defaultConfig, typeConfig };
