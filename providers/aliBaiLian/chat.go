@@ -197,21 +197,25 @@ func (h *aliStreamHandler) handlerStream(rawLine *[]byte, dataChan chan string, 
 }
 
 func (h *aliStreamHandler) convertToOpenaiStream(aliResponse *AliChatResponse, dataChan chan string) {
-	content := aliResponse.Output.Choices[0].Message.StringContent()
+	//content := aliResponse.Output.Choices[0].Message.StringContent()
+	content := aliResponse.Output.Text
 
 	var choice types.ChatCompletionStreamChoice
-	choice.Index = aliResponse.Output.Choices[0].Index
-	choice.Delta.Content = strings.TrimPrefix(content, h.lastStreamResponse)
-	if aliResponse.Output.Choices[0].FinishReason != "" {
-		if aliResponse.Output.Choices[0].FinishReason != "null" {
-			finishReason := aliResponse.Output.Choices[0].FinishReason
+	//choice.Index = aliResponse.Output.Choices[0].Index
+	choice.Index = 1
+	//choice.Delta.Content = strings.TrimPrefix(content, h.lastStreamResponse)
+	choice.Delta.Content = content
+	finishReasonStr := aliResponse.Output.FinishReason
+	if finishReasonStr != "" {
+		if finishReasonStr != "null" {
+			finishReason := finishReasonStr
 			choice.FinishReason = &finishReason
 		}
 	}
 
-	if aliResponse.Output.FinishReason != "" {
-		if aliResponse.Output.FinishReason != "null" {
-			finishReason := aliResponse.Output.FinishReason
+	if finishReasonStr != "" {
+		if finishReasonStr != "null" {
+			finishReason := finishReasonStr
 			choice.FinishReason = &finishReason
 		}
 	}
