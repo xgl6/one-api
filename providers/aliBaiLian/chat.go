@@ -2,6 +2,7 @@ package aliBaiLian
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"one-api/common"
 	"one-api/common/config"
@@ -30,6 +31,13 @@ func (p *AliBaiLianProvider) CreateChatCompletion(request *types.ChatCompletionR
 	if errWithCode != nil {
 		return nil, errWithCode
 	}
+
+	jsonData, err := json.Marshal(aliResponse)
+	if err != nil {
+		fmt.Println("Error marshaling to JSON:", err)
+	}
+	fmt.Println("响应:" + string(jsonData))
+	fmt.Println("请求阿里云结束======")
 
 	return p.convertToChatOpenai(aliResponse, request)
 }
@@ -77,6 +85,19 @@ func (p *AliBaiLianProvider) getAliBaiLianChatRequest(request *types.ChatComplet
 		return nil, common.ErrorWrapper(err, "new_request_failed", http.StatusInternalServerError)
 	}
 
+	fmt.Println("请求阿里云开始======")
+	headersStr, err := json.Marshal(headers)
+	if err != nil {
+		fmt.Println("Error marshaling to JSON:", err)
+	}
+	fmt.Println("请求头:" + string(headersStr))
+
+	jsonData, err := json.Marshal(aliRequest)
+	if err != nil {
+		fmt.Println("Error marshaling to JSON:", err)
+	}
+	fmt.Println("请求参数:" + string(jsonData))
+
 	return req, nil
 }
 
@@ -91,18 +112,35 @@ func (p *AliBaiLianProvider) convertToChatOpenai(response *AliChatResponse, requ
 		return
 	}
 
+	chatChoices := make([]types.ChatCompletionChoice, 0)
+
+	// 添加第一个元素
+	choice1 := types.ChatCompletionChoice{
+		FinishReason: response.Output.FinishReason,
+		Message: types.ChatCompletionMessage{
+			Role:    "assistant",
+			Content: response.Output.Text,
+		},
+	}
+	chatChoices = append(chatChoices, choice1)
+
 	openaiResponse = &types.ChatCompletionResponse{
 		ID:      response.RequestId,
 		Object:  "chat.completion",
 		Created: utils.GetTimestamp(),
 		Model:   request.Model,
-		Choices: response.Output.ToChatCompletionChoices(),
+		Choices: chatChoices,
 		Usage: &types.Usage{
-			PromptTokens:     response.Usage.InputTokens,
-			CompletionTokens: response.Usage.OutputTokens,
-			TotalTokens:      response.Usage.InputTokens + response.Usage.OutputTokens,
+			PromptTokens:     response.Usage.Models[0].InputTokens,
+			CompletionTokens: response.Usage.Models[0].OutputTokens,
+			TotalTokens:      response.Usage.Models[0].InputTokens + response.Usage.Models[0].OutputTokens,
 		},
 	}
+	jsonData, err := json.Marshal(openaiResponse)
+	if err != nil {
+		fmt.Println("Error marshaling to JSON:", err)
+	}
+	fmt.Println("openaiResponse:" + string(jsonData))
 
 	*p.Usage = *openaiResponse.Usage
 
@@ -112,40 +150,14 @@ func (p *AliBaiLianProvider) convertToChatOpenai(response *AliChatResponse, requ
 // 阿里云聊天请求体
 func (p *AliBaiLianProvider) convertFromChatOpenai(request *types.ChatCompletionRequest) *AliBaiLianChatRequest {
 	request.ClearEmptyMessages()
-	messages := make([]AliBaiLianMessage, 0, len(request.Messages))
-	for i := 0; i < len(request.Messages); i++ {
-		message := request.Messages[i]
-		if !strings.HasPrefix(request.Model, "qwen-vl") {
-			messages = append(messages, AliBaiLianMessage{
-				Content: message.StringContent(),
-				Role:    strings.ToLower(message.Role),
-			})
-		} else {
-			openaiContent := message.ParseContent()
-			var parts []AliBaiLianMessagePart
-			for _, part := range openaiContent {
-				if part.Type == types.ContentTypeText {
-					parts = append(parts, AliBaiLianMessagePart{
-						Text: part.Text,
-					})
-				} else if part.Type == types.ContentTypeImageURL {
-					parts = append(parts, AliBaiLianMessagePart{
-						Image: part.ImageURL.URL,
-					})
-				}
-			}
-			messages = append(messages, AliBaiLianMessage{
-				Content: parts,
-				Role:    strings.ToLower(message.Role),
-			})
-		}
 
-	}
+	messagesCount := len(request.Messages)
+	message := request.Messages[messagesCount-1].StringContent()
 
 	AliBaiLianChatRequest := &AliBaiLianChatRequest{
-		Model: request.Model,
+		//Model: request.Model,
 		Input: AliBaiLianInput{
-			Messages: messages,
+			Prompt: message,
 		},
 		Parameters: AliBaiLianParameters{
 			ResultFormat:      "message",
@@ -153,24 +165,7 @@ func (p *AliBaiLianProvider) convertFromChatOpenai(request *types.ChatCompletion
 		},
 	}
 
-	p.pluginHandle(AliBaiLianChatRequest)
-
 	return AliBaiLianChatRequest
-}
-
-func (p *AliBaiLianProvider) pluginHandle(request *AliBaiLianChatRequest) {
-	if p.Channel.Plugin == nil {
-		return
-	}
-
-	plugin := p.Channel.Plugin.Data()
-
-	// 检测是否开启了 web_search 插件
-	if pWeb, ok := plugin["web_search"]; ok {
-		if enable, ok := pWeb["enable"].(bool); ok && enable {
-			request.Parameters.EnableSearch = true
-		}
-	}
 }
 
 // 转换为OpenAI聊天流式请求体
@@ -230,10 +225,10 @@ func (h *aliStreamHandler) convertToOpenaiStream(aliResponse *AliChatResponse, d
 		Choices: []types.ChatCompletionStreamChoice{choice},
 	}
 
-	if aliResponse.Usage.OutputTokens != 0 {
-		h.Usage.PromptTokens = aliResponse.Usage.InputTokens
-		h.Usage.CompletionTokens = aliResponse.Usage.OutputTokens
-		h.Usage.TotalTokens = aliResponse.Usage.InputTokens + aliResponse.Usage.OutputTokens
+	if aliResponse.Usage.Models[0].OutputTokens != 0 {
+		h.Usage.PromptTokens = aliResponse.Usage.Models[0].InputTokens
+		h.Usage.CompletionTokens = aliResponse.Usage.Models[0].OutputTokens
+		h.Usage.TotalTokens = aliResponse.Usage.Models[0].InputTokens + aliResponse.Usage.Models[0].OutputTokens
 	}
 
 	responseBody, _ := json.Marshal(streamResponse)

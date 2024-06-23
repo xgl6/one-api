@@ -63,9 +63,9 @@ func (p *AliBaiLianProvider) convertToEmbeddingOpenai(response *AliEmbeddingResp
 		Data:   make([]types.Embedding, 0, len(response.Output.Embeddings)),
 		Model:  request.Model,
 		Usage: &types.Usage{
-			PromptTokens:     response.Usage.TotalTokens,
-			CompletionTokens: response.Usage.OutputTokens,
-			TotalTokens:      response.Usage.TotalTokens,
+			PromptTokens:     response.Usage.Models[0].TotalTokens,
+			CompletionTokens: response.Usage.Models[0].OutputTokens,
+			TotalTokens:      response.Usage.Models[0].TotalTokens,
 		},
 	}
 

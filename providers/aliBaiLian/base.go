@@ -34,7 +34,7 @@ func (f AliBaiLianProviderFactory) Create(channel *model.Channel) base.ProviderI
 func getConfig() base.ProviderConfig {
 	return base.ProviderConfig{
 		BaseURL:         "https://dashscope.aliyuncs.com",
-		ChatCompletions: "/api/v1/services/aigc/text-generation/generation",
+		ChatCompletions: "/api/v1/apps/c8197fd096154799aa3f5c79f328204c/completion",
 		Embeddings:      "/api/v1/services/embeddings/text-embedding/text-embedding",
 	}
 }

@@ -11,24 +11,22 @@ type AliBaiLianError struct {
 }
 
 type AliBaiLianUsage struct {
-	InputTokens  int `json:"input_tokens"`
-	OutputTokens int `json:"output_tokens"`
-	TotalTokens  int `json:"total_tokens"`
+	Models []AliBaiLianModels `json:"models"`
 }
-
-type AliBaiLianMessage struct {
-	Content any    `json:"content"`
-	Role    string `json:"role"`
+type AliBaiLianModels struct {
+	InputTokens  int    `json:"input_tokens"`
+	OutputTokens int    `json:"output_tokens"`
+	TotalTokens  int    `json:"total_tokens"`
+	ModelId      string `json:"model_id"`
 }
-
 type AliBaiLianMessagePart struct {
 	Text  string `json:"text,omitempty"`
 	Image string `json:"image,omitempty"`
 }
 
 type AliBaiLianInput struct {
-	// Prompt  string       `json:"prompt"`
-	Messages []AliBaiLianMessage `json:"messages"`
+	Prompt string `json:"prompt"`
+	//Messages []AliBaiLianMessage `json:"messages"`
 }
 
 type AliBaiLianParameters struct {
@@ -41,7 +39,7 @@ type AliBaiLianParameters struct {
 }
 
 type AliBaiLianChatRequest struct {
-	Model      string               `json:"model"`
+	//Model      string               `json:"model"`
 	Input      AliBaiLianInput      `json:"input"`
 	Parameters AliBaiLianParameters `json:"parameters,omitempty"`
 }
@@ -54,6 +52,8 @@ type AliChoice struct {
 type AliOutput struct {
 	Choices      []types.ChatCompletionChoice `json:"choices"`
 	FinishReason string                       `json:"finish_reason,omitempty"`
+	SessionId    string                       `json:"session_id"`
+	Text         string                       `json:"text"`
 }
 
 func (o *AliOutput) ToChatCompletionChoices() []types.ChatCompletionChoice {
