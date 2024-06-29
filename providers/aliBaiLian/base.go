@@ -34,7 +34,7 @@ func (f AliBaiLianProviderFactory) Create(channel *model.Channel) base.ProviderI
 func getConfig() base.ProviderConfig {
 	return base.ProviderConfig{
 		BaseURL:         "https://dashscope.aliyuncs.com",
-		ChatCompletions: "/api/v1/apps/c8197fd096154799aa3f5c79f328204c/completion",
+		ChatCompletions: "/api/v1/apps/appid/completion",
 		Embeddings:      "/api/v1/services/embeddings/text-embedding/text-embedding",
 	}
 }
@@ -66,9 +66,13 @@ func errorHandle(AliBaiLianError *AliBaiLianError) *types.OpenAIError {
 func (p *AliBaiLianProvider) GetFullRequestURL(requestURL string, modelName string) string {
 	baseURL := strings.TrimSuffix(p.GetBaseURL(), "/")
 
+	//赋值appid
+	requestURL = strings.Replace(requestURL, "appid", p.Channel.Other, 1)
+
 	if strings.HasPrefix(modelName, "qwen-vl") {
 		requestURL = "/api/v1/services/aigc/multimodal-generation/generation"
 	}
+	fmt.Println("requestURL:" + requestURL)
 
 	return fmt.Sprintf("%s%s", baseURL, requestURL)
 }

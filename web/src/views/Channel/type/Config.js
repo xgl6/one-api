@@ -376,17 +376,17 @@ const typeConfig = {
   },
   41: {
     inputLabel: {
-      other: '插件参数'
+      other: '请输入应用ID'
     },
     input: {
       models: ['qwen-turbo', 'qwen-plus', 'qwen-max', 'qwen-max-longcontext', 'text-embedding-v1'],
       test_model: 'qwen-turbo'
     },
     prompt: {
-      other: '请输入插件参数，即 X-DashScope-Plugin 请求头的取值'
+      other: '请输入应用ID'
     },
     modelGroup: 'AliBaiLian'
-  },
+  }
 };
 
 export { defaultConfig, typeConfig };

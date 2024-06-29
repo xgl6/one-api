@@ -213,13 +213,6 @@ func (h *aliStreamHandler) convertToOpenaiStream(aliResponse *AliChatResponse, d
 		}
 	}
 
-	if finishReasonStr != "" {
-		if finishReasonStr != "null" {
-			finishReason := finishReasonStr
-			choice.FinishReason = &finishReason
-		}
-	}
-
 	h.lastStreamResponse = content
 	streamResponse := types.ChatCompletionStreamResponse{
 		ID:      aliResponse.RequestId,
